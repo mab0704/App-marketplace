@@ -1,6 +1,6 @@
 # Bem Chic Calculadora — iOS e Android
 
-Primeira versão em React Native + Expo, com interface em português. Calcula contribuição por venda, preço para margem desejada, equilíbrio e limites de Ads. Compara Shopee e Mercado Livre e salva até 30 simulações no aparelho.
+Primeira versão em React Native + Expo, com interface em português. Calcula contribuição por venda, preço para margem desejada, equilíbrio e limites de Ads. Possui calculadoras separadas para Shopee e Mercado Livre e salva até 30 simulações no aparelho.
 
 ## Executar
 
