@@ -3,18 +3,19 @@ import { Alert, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleShee
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { calculate } from './src/calculator.mjs';
+import { calculateShopee, RULE_VERSION } from './src/shopee.mjs';
 
 const KEY = '@bemchic/calculadora/v1';
-const initial = { price:'', cost:'', packaging:'', shipping:'', fee:'', commission:'', tax:'', returns:'', discount:'', ads:'', adsMode:'fixed', target:'15' };
+const initial = { price:'', cost:'', packaging:'', shipping:'', fee:'', commission:'', tax:'', returns:'', discount:'', ads:'', adsMode:'fixed', target:'15', sellerType:'CNPJ', campaign:'no', ruleVersion:RULE_VERSION };
 const money = n => n == null ? 'Indisponível' : n.toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
 const pct = n => `${n.toFixed(2).replace('.',',')}%`;
-const fields = [ ['price','Preço anunciado','R$'], ['discount','Desconto do vendedor','%'], ['cost','Custo do produto','R$'], ['packaging','Embalagem','R$'], ['shipping','Frete pago pelo vendedor','R$'], ['commission','Comissão','%'], ['fee','Taxa fixa por venda','R$'], ['tax','Impostos sobre a venda','%'], ['returns','Provisão para devoluções','%'], ['target','Margem desejada','%'] ];
-function resultOf(v) { try { return {data:calculate(v)}; } catch (e) { return {error:e.message}; } }
+const fields = [ ['price','Preço anunciado','R$'], ['discount','Desconto do vendedor','%'], ['cost','Custo do produto','R$'], ['packaging','Embalagem','R$'], ['shipping','Frete pago pelo vendedor','R$'], ['tax','Impostos sobre a venda','%'], ['returns','Provisão para devoluções','%'], ['target','Margem desejada','%'] ];
+function resultOf(v) { try { return {data:v.ruleVersion ? calculateShopee(v) : calculate(v)}; } catch (e) { return {error:e.message}; } }
 function Button({label,onPress,active=false}) { return <Pressable accessibilityRole="button" accessibilityState={{selected:active}} onPress={onPress} style={[s.button,active&&s.selected]}><Text style={[s.buttonText,active&&s.selectedText]}>{label}</Text></Pressable>; }
 function Metric({label,value,large=false}) { return <View style={s.metric}><Text style={s.muted}>{label}</Text><Text style={large?s.large:s.value}>{value}</Text></View>; }
 export default function App() { return <SafeAreaProvider><Calculator /></SafeAreaProvider>; }
 function Calculator() {
-  const [market,setMarket] = useState('Shopee');
+  const market = 'Shopee';
   const [tab,setTab] = useState('Calcular');
   const [profiles,setProfiles] = useState({Shopee:{...initial},'Mercado Livre':{...initial}});
   const [history,setHistory] = useState([]);
@@ -43,31 +44,31 @@ function Calculator() {
     const next = [{id:String(Date.now()),date:new Date().toISOString(),market,values:{...values}},...history].slice(0,30);
     if(await persist(next)){setHistory(next);Alert.alert('Simulação salva','Os dados estão guardados somente neste aparelho.');}
   }
-  const missing = ['commission','fee','shipping','tax'].some(k=>values[k]==='');
+  const visibleHistory = history.filter(item=>item.market==='Shopee');
+  const missing = ['shipping','tax'].some(k=>values[k]==='');
   if (!ready) return <SafeAreaView style={s.safe}><Text style={s.title}>Carregando calculadora…</Text></SafeAreaView>;
   return <SafeAreaView style={s.safe}><StatusBar barStyle="dark-content"/><KeyboardAvoidingView style={{flex:1}} behavior={Platform.OS==='ios'?'padding':undefined}><ScrollView contentContainerStyle={s.content} keyboardShouldPersistTaps="handled">
-    <Text style={s.brand}>BEM CHIC • SELLER TOOLS</Text><Text style={s.title}>Cada venda,\numa decisão melhor.</Text><Text style={s.subtitle}>Precificação para marketplaces</Text>
+    <Text style={s.brand}>BEM CHIC • SELLER TOOLS</Text><Text style={s.title}>Cada venda,\numa decisão melhor.</Text><Text style={s.subtitle}>Calculadora Shopee • CNPJ</Text>
     <View style={s.row}>{['Calcular','Histórico'].map(t=><Button key={t} label={t} active={tab===t} onPress={()=>setTab(t)}/>)}</View>
     {!!storageError&&<Text accessibilityRole="alert" style={s.warning}>{storageError}</Text>}
     {tab==='Calcular'&&<>
-      <View style={s.row}>{Object.keys(profiles).map(m=><Button key={m} label={m} active={market===m} onPress={()=>setMarket(m)}/>)}</View>
-      <View style={s.card}><Text style={s.heading}>Custos e condições</Text><Text style={s.note}>Preencha as taxas do seu anúncio. Não há tabela oficial automática. Valores em branco entram como zero.</Text>
-        {market==='Mercado Livre'&&<Text style={s.note}>Use a comissão do seu tipo de anúncio e categoria e o custo de frete efetivamente cobrado.</Text>}
-        {market==='Shopee'&&<Text style={s.note}>Inclua os custos dos programas e condições aplicáveis à sua conta na comissão e na taxa fixa.</Text>}
+      <View style={s.card}><Text style={s.heading}>Shopee · CNPJ</Text><Text style={s.note}>Tabela fornecida por você • referência outubro/2026. Confira as condições da sua conta. Cálculo por unidade vendida.</Text><Button label={values.campaign==='yes'?'Campanha de destaque: ativa (+2,5%)':'Campanha de destaque: desativada'} active={values.campaign==='yes'} onPress={()=>update('campaign',values.campaign==='yes'?'no':'yes')}/></View>
+      <View style={s.card}><Text style={s.heading}>Custos e condições</Text><Text style={s.note}>Comissão e taxa por item são calculadas pela faixa do preço após desconto do vendedor. Informe seus custos; campos vazios entram como zero.</Text>
         <View style={s.grid}>{fields.map(([key,label,unit])=><View key={key} style={s.field}><Text style={s.label}>{label}</Text><View style={s.inputWrap}><Text style={s.unit}>{unit}</Text><TextInput accessibilityLabel={`${label} em ${unit}`} keyboardType="decimal-pad" value={values[key]} onChangeText={v=>update(key,v)} placeholder="0,00" placeholderTextColor="#89958f" maxLength={14} style={s.input}/></View></View>)}</View>
       </View>
       <View style={s.card}><Text style={s.heading}>Publicidade</Text><View style={s.row}>{[['fixed','R$ / venda'],['percent','ACOS %'],['roas','ROAS']].map(([mode,label])=><Button key={mode} label={label} active={values.adsMode===mode} onPress={()=>{setProfiles(p=>({...p,[market]:{...p[market],adsMode:mode,ads:''}}));}}/>)}</View>
         <Text style={s.label}>{values.adsMode==='fixed'?'Custo de Ads por venda':values.adsMode==='percent'?'ACOS estimado (%)':'ROAS estimado (ex.: 15)'}</Text><TextInput style={[s.inputWrap,s.singleInput]} accessibilityLabel="Valor de publicidade" keyboardType="decimal-pad" value={values.ads} onChangeText={v=>update('ads',v)} placeholder="0" maxLength={14}/>
         <Text style={s.note}>Escolha um único método. ROAS e ACOS simulam uma venda atribuída aos anúncios; não representam o TACOS da operação.</Text>
       </View>
-      {missing&&<Text style={s.warning}>Comissão, taxa fixa, frete ou impostos ainda não preenchidos. Informe 0 quando não houver cobrança.</Text>}
+      {missing&&<Text style={s.warning}>Frete ou impostos ainda não preenchidos. Informe 0 quando não houver cobrança.</Text>}
       {r?<><View style={[s.result,r.contribution<0&&s.loss]}><Text style={s.resultLabel}>MARGEM DE CONTRIBUIÇÃO</Text><Text style={s.resultMoney}>{money(r.contribution)}</Text><Text style={s.resultSub}>{pct(r.margin)} da receita após desconto • por venda</Text><Text style={s.resultSub}>{r.contribution<0?'A venda está dando prejuízo antes das despesas fixas.':'Valor disponível para cobrir despesas fixas e gerar lucro.'}</Text></View>
-      <View style={s.card}><Text style={s.heading}>Seu preço, com estratégia</Text><Metric label="Preço anunciado para a margem desejada" value={money(r.suggestedPrice)} large/><Metric label="Preço anunciado de equilíbrio" value={money(r.breakEven)}/>{r.suggestedPrice===null&&<Text style={s.warning}>Os percentuais não permitem atingir essa meta. Revise custos, Ads ou margem.</Text>}<Text style={s.note}>Considera o desconto informado. Taxas e frete constantes: se mudarem por faixa de preço, recalcule.</Text></View>
-      <View style={s.card}><Text style={s.heading}>Para onde vai o dinheiro</Text>{[['Receita após desconto',r.revenue],['Produto, embalagem, frete e taxa fixa',r.fixed],['Comissão',r.commissionCost],['Impostos',r.taxCost],['Provisão para devoluções',r.returnCost],['Publicidade',r.adsCost],['Total de custos variáveis',r.totalCost]].map(([label,value])=><Metric key={label} label={label} value={money(value)}/>)}</View>
+      <View style={s.card}><Text style={s.heading}>Seu preço, com estratégia</Text><Metric label="Preço anunciado para a margem desejada" value={money(r.suggestedPrice)} large/><Metric label="Preço anunciado de equilíbrio" value={money(r.breakEven)}/>{r.suggestedPrice===null&&<Text style={s.warning}>Os percentuais não permitem atingir essa meta. Revise custos, Ads ou margem.</Text>}<Text style={s.note}>Busca o menor preço que atinge a meta em todas as faixas da tabela, considerando seu desconto. Frete e demais custos informados permanecem constantes.</Text></View>
+      <View style={s.card}><Text style={s.heading}>Taxas e benefícios da faixa</Text><Metric label="Comissão da faixa" value={pct(r.fees.commission)}/><Metric label="Taxa por item (já incluída nos custos abaixo)" value={money(r.fees.fee)}/><Metric label="Subsídio Pix potencial ao comprador" value={pct(r.fees.pixPercent)}/><Metric label="Subsídio de frete ao comprador, até" value={money(r.fees.freightSubsidy)}/><Text style={s.note}>Benefícios informativos, sujeitos às condições da Shopee. Não somam receita nem reduzem os custos do vendedor nesta simulação. Informe somente seu frete efetivamente cobrado. Pix de 8% considerado a partir de R$ 500.</Text></View>
+      <View style={s.card}><Text style={s.heading}>Para onde vai o dinheiro</Text>{[['Receita após desconto',r.revenue],['Produto, embalagem, frete e taxa fixa',r.fixed],['Comissão Shopee',r.commissionCost],['Campanha de destaque',r.campaignCost],['Impostos',r.taxCost],['Provisão para devoluções',r.returnCost],['Publicidade',r.adsCost],['Total de custos variáveis',r.totalCost]].map(([label,value])=><Metric key={label} label={label} value={money(value)}/>)}</View>
       <View style={s.card}><Text style={s.heading}>Limites de publicidade</Text><Metric label="ACOS simulado" value={pct(r.acos)}/><Metric label="ROAS simulado" value={r.roas===null?'Sem investimento':`${r.roas.toFixed(2)}x`}/><Metric label="Máximo de Ads para contribuição zero" value={money(r.maxAds)}/><Metric label="ROAS de equilíbrio" value={r.breakEvenRoas===null?'Inviável antes dos Ads':`${r.breakEvenRoas.toFixed(2)}x`}/></View>
       <Button label="Salvar simulação no aparelho" active onPress={save}/></>:<Text accessibilityRole="alert" style={s.warning}>{result.error}</Text>}
     </>}
-    {tab==='Histórico'&&<><Text style={s.heading}>Suas últimas 30 simulações</Text>{history.length===0&&<Text style={s.note}>Nenhuma simulação salva. Preencha os custos e toque em salvar.</Text>}{history.map(item=>{const data=resultOf(item.values).data;return <View key={item.id} style={s.card}><Text style={s.heading}>{item.market}</Text><Text style={s.note}>{new Date(item.date).toLocaleString('pt-BR')}</Text><Metric label="Contribuição por venda" value={money(data?.contribution)}/><Button label="Carregar simulação" onPress={()=>{setProfiles(p=>({...p,[item.market]:{...initial,...item.values}}));setMarket(item.market);setTab('Calcular');}}/></View>;})}{history.length>0&&<Button label="Apagar histórico" onPress={()=>Alert.alert('Apagar histórico?','Essa ação remove as simulações salvas neste aparelho.',[{text:'Cancelar',style:'cancel'},{text:'Apagar',style:'destructive',onPress:async()=>{if(await persist([]))setHistory([]);}}])}/>}</>}
+    {tab==='Histórico'&&<><Text style={s.heading}>Simulações Shopee salvas</Text>{visibleHistory.length===0&&<Text style={s.note}>Nenhuma simulação salva. Preencha os custos e toque em salvar.</Text>}{visibleHistory.map(item=>{const data=resultOf(item.values).data;return <View key={item.id} style={s.card}><Text style={s.heading}>{item.market}</Text><Text style={s.note}>{new Date(item.date).toLocaleString('pt-BR')}</Text><Metric label="Contribuição por venda" value={money(data?.contribution)}/><Button label="Recalcular com a tabela atual" onPress={()=>{setProfiles(p=>({...p,[item.market]:{...initial,...item.values,ruleVersion:RULE_VERSION}}));setTab('Calcular');}}/></View>;})}{visibleHistory.length>0&&<Button label="Apagar histórico" onPress={()=>Alert.alert('Apagar histórico?','Essa ação remove as simulações salvas neste aparelho.',[{text:'Cancelar',style:'cancel'},{text:'Apagar',style:'destructive',onPress:async()=>{const remaining=history.filter(item=>item.market!=='Shopee');if(await persist(remaining))setHistory(remaining);}}])}/>}</>}
     <Text style={s.footer}>Margem de contribuição não é lucro líquido. Despesas fixas e pró-labore não estão descontados. Impostos, comissão e provisão são calculados sobre a receita após desconto. Provisão é uma estimativa simplificada de perdas com devoluções.</Text>
   </ScrollView></KeyboardAvoidingView></SafeAreaView>;
 }
