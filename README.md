@@ -13,7 +13,7 @@ npm test
 npm start
 ```
 
-Este projeto usa Expo SDK 55, React Native 0.83.2 e React 19.2. Use uma versão compatível do Expo Go ou um development build. Para compilação local: `npm run android` (Android Studio) e `npm run ios` (macOS + Xcode).
+Este projeto usa Expo SDK 55, React Native 0.83.10 e React 19.2. Use uma versão compatível do Expo Go ou um development build. Para compilação local: `npm run android` (Android Studio) e `npm run ios` (macOS + Xcode).
 
 ## Gerar instaladores
 
@@ -47,5 +47,7 @@ O perfil preview gera APK Android. Distribuição iOS/TestFlight e publicação 
 Sem login, backend, telemetria ou chaves de marketplace. O botão salvar persiste os dois perfis e o histórico localmente via AsyncStorage (não criptografado). Desinstalar pode apagar os dados. O repositório é público: não inclua dados comerciais sensíveis. O app não promete backup ou sincronização entre aparelhos.
 
 ## Validação e limites
+
+Validação nesta entrega: 6 testes passaram; exportação dos bundles iOS e Android concluída com Expo/Metro. Builds nativos e testes em aparelhos não foram executados.
 
 `npm test` valida fórmulas, desconto, meta, equilíbrio, modos de Ads e entradas inválidas. Antes de distribuir, execute builds nativos e valide em iOS e Android reais, incluindo teclado, acessibilidade, persistência e layouts. Esta entrega de código não equivale a um aplicativo publicado nas lojas.
