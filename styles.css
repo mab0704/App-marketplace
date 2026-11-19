@@ -294,3 +294,25 @@ input[type="number"] { -moz-appearance: textfield; appearance: textfield; }
 .toast { white-space: nowrap; }
 
 .chip, .btn-primary, .btn-primary.small, .pill-btn, .chip-btn, .segmented button, .link-btn { white-space: nowrap; }
+
+/* ============ Cartões em coluna única, campos lado a lado ============ */
+.cards { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; }
+.cards > .cfg { min-width: 0; }
+.cfg-head { flex-direction: row; align-items: center; gap: 12px; }
+.cfg-head > div { width: auto; min-width: 0; }
+.cfg-head h3 { font-size: 16px; }
+.cfg-head p { font-size: 13px; }
+.cfg { padding: 16px; gap: 14px; }
+.ico { width: 44px; height: 44px; border-radius: 14px; }
+.fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; align-items: end; }
+.fields.three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.fields > * { min-width: 0; }
+.fields .switch-row { min-height: 46px; padding: 0 2px; }
+.fields .inp input { font-size: 17px; }
+.fld > span { font-size: 13px; }
+.inp { min-height: 48px; }
+.cfg .segmented, .cfg .fld { min-width: 0; }
+.strategy .fld { margin-top: 2px; }
+@media (max-width: 340px) { .fields.three { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+#alerta { white-space: normal; }

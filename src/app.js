@@ -166,7 +166,7 @@
     $('meter-goal').style.left = Math.min(r.margemMin / 0.4, 1) * 100 + '%';
 
     const alertas = [];
-    if (!prod.comissaoPct && !dados.ajustes.comissaoPct) alertas.push('Defina a comissão nos Ajustes para um cálculo confiável.');
+    if (!prod.comissaoPct && !dados.ajustes.comissaoPct) alertas.push('Preencha a comissão no cartão Mercado Livre.');
     if (r.valor > 0 && r.margemDepois < 0) alertas.push('Com essas taxas e ADS, cada venda dá prejuízo.');
     $('alerta').textContent = alertas.join(' ');
 
