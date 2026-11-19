@@ -3,166 +3,195 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <meta name="theme-color" content="#f5f3ef" media="(prefers-color-scheme: light)" />
-  <meta name="theme-color" content="#0f1115" media="(prefers-color-scheme: dark)" />
+  <meta name="theme-color" content="#f2f2f7" media="(prefers-color-scheme: light)" />
+  <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <title>Precificação ML</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <header class="topbar">
-    <div class="brand">
-      <span class="logo" aria-hidden="true">ML</span>
-      <div>
-        <h1>Precificação</h1>
-        <p>Margem antes e depois de ADS</p>
-      </div>
-    </div>
-    <button id="btn-limpar" class="ghost" type="button">Limpar</button>
-  </header>
-
-  <main class="layout">
-    <!-- Resultado principal -->
-    <section class="hero card" id="hero" aria-live="polite">
-      <div class="hero-top">
-        <span class="label">Margem depois de ADS</span>
-        <span class="pill" id="status">Preencha os dados</span>
-      </div>
-      <div class="hero-value">
-        <strong id="margem-depois-pct">0%</strong>
-        <span id="margem-depois-rs">R$ 0,00</span>
-      </div>
-      <div class="meter" aria-hidden="true"><div class="meter-fill" id="meter-fill"></div><span class="meter-goal" id="meter-goal"></span></div>
-      <p class="hint" id="alerta"></p>
-    </section>
-
-    <section class="grid-2">
-      <div class="card stat">
-        <span class="label">Antes de ADS</span>
-        <strong id="margem-antes-pct">0%</strong>
-        <span class="muted" id="margem-antes-rs">R$ 0,00</span>
-      </div>
-      <div class="card stat">
-        <span class="label">Custo de ADS</span>
-        <strong id="ads-rs">R$ 0,00</strong>
-        <span class="muted" id="ads-pct">0% do valor cobrado</span>
-      </div>
-    </section>
-
-    <!-- Sugestão de preço -->
-    <section class="card suggest" aria-labelledby="sug-title">
-      <h2 id="sug-title">Preço para a sua meta</h2>
-      <div class="suggest-grid">
+  <div class="app">
+    <!-- Tela: Início -->
+    <section class="screen is-active" id="tela-inicio" data-screen="inicio" aria-label="Início">
+      <header class="nav-head">
         <div>
-          <span class="label">Mínimo depois de ADS</span>
+          <p class="eyebrow">Mercado Livre</p>
+          <h1>Precificação</h1>
+        </div>
+        <span class="avatar" aria-hidden="true">ML</span>
+      </header>
+
+      <div class="hero">
+        <div class="hero-top">
+          <span class="hero-label">Margem depois de ADS</span>
+          <span class="chip" id="status">Preencha os dados</span>
+        </div>
+        <div class="hero-value">
+          <strong id="margem-depois-pct">0%</strong>
+          <span id="margem-depois-rs">R$ 0,00</span>
+        </div>
+        <div class="meter" aria-hidden="true">
+          <div class="meter-fill" id="meter-fill"></div>
+          <span class="meter-goal" id="meter-goal"></span>
+        </div>
+        <div class="meter-scale"><span>0%</span><span>meta</span><span>40%</span></div>
+        <p class="alert" id="alerta"></p>
+      </div>
+
+      <div class="bento">
+        <div class="tile">
+          <span class="tile-label">Antes de ADS</span>
+          <strong id="margem-antes-pct">0%</strong>
+          <span class="tile-sub" id="margem-antes-rs">R$ 0,00</span>
+        </div>
+        <div class="tile">
+          <span class="tile-label">Gasto com ADS</span>
+          <strong id="ads-rs">R$ 0,00</strong>
+          <span class="tile-sub" id="ads-pct">0% do valor cobrado</span>
+        </div>
+      </div>
+
+      <h2 class="section-title">Preço para a sua meta</h2>
+      <div class="group">
+        <div class="row">
+          <span>Mínimo depois de ADS</span>
           <strong id="sug-ads">-</strong>
         </div>
-        <div>
-          <span class="label">Mínimo antes de ADS</span>
+        <div class="row">
+          <span>Mínimo antes de ADS</span>
           <strong id="sug-sem-ads">-</strong>
         </div>
-        <div class="wide">
-          <span class="label">Sugestão com fechamento em ,90</span>
+        <div class="row row-highlight">
+          <div>
+            <span>Sugestão com fechamento ,90</span>
+            <small id="sug-final-info"></small>
+          </div>
           <strong class="accent" id="sug-final">-</strong>
-          <span class="muted" id="sug-final-info"></span>
         </div>
       </div>
+
+      <h2 class="section-title">Para onde vai cada real</h2>
+      <ul class="group waterfall" id="cascata"></ul>
     </section>
 
-    <!-- Cascata -->
-    <section class="card" aria-labelledby="cascata-title">
-      <h2 id="cascata-title">Para onde vai cada real</h2>
-      <ul class="waterfall" id="cascata"></ul>
+    <!-- Tela: Custos -->
+    <section class="screen" id="tela-custos" data-screen="custos" aria-label="Custos">
+      <header class="nav-head">
+        <div>
+          <p class="eyebrow">Dados do anúncio</p>
+          <h1>Custos</h1>
+        </div>
+        <button id="btn-limpar" class="pill-btn" type="button">Limpar</button>
+      </header>
+
+      <form id="form" class="form" autocomplete="off" novalidate>
+        <h2 class="section-title">Produto</h2>
+        <div class="group">
+          <label class="row field">
+            <span>Preço anunciado</span>
+            <div class="input-wrap"><em>R$</em><input name="preco" type="number" inputmode="decimal" step="0.01" min="0" placeholder="0,00" /></div>
+          </label>
+          <label class="row field">
+            <span>Custo do produto</span>
+            <div class="input-wrap"><em>R$</em><input name="custo" type="number" inputmode="decimal" step="0.01" min="0" placeholder="0,00" /></div>
+          </label>
+          <label class="row field">
+            <span>Embalagem</span>
+            <div class="input-wrap"><em>R$</em><input name="embalagem" type="number" inputmode="decimal" step="0.01" min="0" placeholder="0,00" /></div>
+          </label>
+          <label class="row field">
+            <span>Outros custos</span>
+            <div class="input-wrap"><em>R$</em><input name="outros" type="number" inputmode="decimal" step="0.01" min="0" placeholder="0,00" /></div>
+          </label>
+        </div>
+
+        <h2 class="section-title">Mercado Livre</h2>
+        <div class="group">
+          <label class="row field">
+            <span>Comissão da categoria</span>
+            <div class="input-wrap"><input name="comissaoPct" type="number" inputmode="decimal" step="0.01" min="0" placeholder="Confira" /><em>%</em></div>
+          </label>
+          <label class="row field">
+            <span>Taxa fixa por venda</span>
+            <div class="input-wrap"><em>R$</em><input name="taxaFixa" type="number" inputmode="decimal" step="0.01" min="0" placeholder="0,00" /></div>
+          </label>
+          <label class="row field">
+            <span>Frete pago por você</span>
+            <div class="input-wrap"><em>R$</em><input name="frete" type="number" inputmode="decimal" step="0.01" min="0" placeholder="0,00" /></div>
+          </label>
+        </div>
+
+        <h2 class="section-title">Impostos, cupons e afiliados</h2>
+        <div class="group">
+          <label class="row field">
+            <span>Imposto efetivo</span>
+            <div class="input-wrap"><input name="impostoPct" type="number" inputmode="decimal" step="0.01" min="0" placeholder="0" /><em>%</em></div>
+          </label>
+          <label class="row field">
+            <span>Programa de afiliados</span>
+            <div class="input-wrap"><input name="afiliadoPct" type="number" inputmode="decimal" step="0.01" min="0" placeholder="0" /><em>%</em></div>
+          </label>
+          <label class="row field">
+            <span>Cupom pago por você</span>
+            <div class="input-wrap"><input name="cupomPct" type="number" inputmode="decimal" step="0.01" min="0" placeholder="0" /><em>%</em></div>
+          </label>
+          <label class="row field">
+            <span>Cupom em reais</span>
+            <div class="input-wrap"><em>R$</em><input name="cupomValor" type="number" inputmode="decimal" step="0.01" min="0" placeholder="0,00" /></div>
+          </label>
+        </div>
+
+        <h2 class="section-title">ADS e meta</h2>
+        <div class="group">
+          <label class="row field">
+            <span>ACOS de ADS</span>
+            <div class="input-wrap"><input name="acosPct" type="number" inputmode="decimal" step="0.01" min="0" placeholder="0" /><em>%</em></div>
+          </label>
+          <label class="row field">
+            <span>Margem mínima</span>
+            <div class="input-wrap"><input name="margemMinPct" type="number" inputmode="decimal" step="0.01" min="0" value="20" /><em>%</em></div>
+          </label>
+        </div>
+
+        <h2 class="section-title">Salvar produto</h2>
+        <div class="group save-group">
+          <label class="row field">
+            <span>Nome</span>
+            <input id="nome-produto" class="text-input" type="text" maxlength="60" placeholder="Ex.: Vaso cerâmica 20cm" />
+          </label>
+        </div>
+        <button id="btn-salvar" class="btn-primary" type="button">Salvar produto</button>
+        <p class="footnote">Os valores de comissão e taxa mudam. Confira na tabela oficial do Mercado Livre.</p>
+      </form>
     </section>
 
-    <!-- Formulário -->
-    <form id="form" class="form" autocomplete="off" novalidate>
-      <fieldset class="card">
-        <legend>Produto</legend>
-        <div class="fields">
-          <label class="field">
-            <span>Preço anunciado (R$)</span>
-            <input name="preco" type="number" inputmode="decimal" step="0.01" min="0" placeholder="0,00" />
-          </label>
-          <label class="field">
-            <span>Custo do produto (R$)</span>
-            <input name="custo" type="number" inputmode="decimal" step="0.01" min="0" placeholder="0,00" />
-          </label>
-          <label class="field">
-            <span>Embalagem (R$)</span>
-            <input name="embalagem" type="number" inputmode="decimal" step="0.01" min="0" placeholder="0,00" />
-          </label>
-          <label class="field">
-            <span>Outros custos por venda (R$)</span>
-            <input name="outros" type="number" inputmode="decimal" step="0.01" min="0" placeholder="0,00" />
-          </label>
+    <!-- Tela: Produtos -->
+    <section class="screen" id="tela-produtos" data-screen="produtos" aria-label="Produtos salvos">
+      <header class="nav-head">
+        <div>
+          <p class="eyebrow">Biblioteca</p>
+          <h1>Produtos</h1>
         </div>
-      </fieldset>
-
-      <fieldset class="card">
-        <legend>Mercado Livre</legend>
-        <div class="fields">
-          <label class="field">
-            <span>Comissão da categoria (%)</span>
-            <input name="comissaoPct" type="number" inputmode="decimal" step="0.01" min="0" placeholder="Confira na sua categoria" />
-          </label>
-          <label class="field">
-            <span>Taxa fixa por venda (R$)</span>
-            <input name="taxaFixa" type="number" inputmode="decimal" step="0.01" min="0" placeholder="0,00" />
-          </label>
-          <label class="field">
-            <span>Frete pago pelo vendedor (R$)</span>
-            <input name="frete" type="number" inputmode="decimal" step="0.01" min="0" placeholder="0,00" />
-          </label>
-        </div>
-      </fieldset>
-
-      <fieldset class="card">
-        <legend>Impostos, cupons e afiliados</legend>
-        <div class="fields">
-          <label class="field">
-            <span>Imposto sobre a venda (%)</span>
-            <input name="impostoPct" type="number" inputmode="decimal" step="0.01" min="0" placeholder="Alíquota efetiva" />
-          </label>
-          <label class="field">
-            <span>Programa de afiliados (%)</span>
-            <input name="afiliadoPct" type="number" inputmode="decimal" step="0.01" min="0" placeholder="0" />
-          </label>
-          <label class="field">
-            <span>Cupom pago por você (%)</span>
-            <input name="cupomPct" type="number" inputmode="decimal" step="0.01" min="0" placeholder="0" />
-          </label>
-          <label class="field">
-            <span>Cupom pago por você (R$)</span>
-            <input name="cupomValor" type="number" inputmode="decimal" step="0.01" min="0" placeholder="0,00" />
-          </label>
-        </div>
-      </fieldset>
-
-      <fieldset class="card">
-        <legend>ADS e meta</legend>
-        <div class="fields">
-          <label class="field">
-            <span>ACOS de ADS (%)</span>
-            <input name="acosPct" type="number" inputmode="decimal" step="0.01" min="0" placeholder="0" />
-          </label>
-          <label class="field">
-            <span>Margem mínima desejada (%)</span>
-            <input name="margemMinPct" type="number" inputmode="decimal" step="0.01" min="0" value="20" />
-          </label>
-        </div>
-      </fieldset>
-    </form>
-
-    <!-- Produtos salvos -->
-    <section class="card" aria-labelledby="salvos-title">
-      <h2 id="salvos-title">Produtos salvos</h2>
-      <div class="save-row">
-        <input id="nome-produto" type="text" maxlength="60" placeholder="Nome do produto" />
-        <button id="btn-salvar" class="primary" type="button">Salvar</button>
-      </div>
-      <ul class="saved" id="lista-salvos"></ul>
+      </header>
+      <ul class="group saved" id="lista-salvos"></ul>
     </section>
-  </main>
+  </div>
+
+  <nav class="tabbar" aria-label="Navegação principal">
+    <button class="tab is-active" type="button" data-tab="inicio" aria-current="page">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11.5 12 4l8 7.5V20a1 1 0 0 1-1 1h-4.5v-6h-5v6H5a1 1 0 0 1-1-1z"/></svg>
+      <span>Resultado</span>
+    </button>
+    <button class="tab" type="button" data-tab="custos">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3h10a1 1 0 0 1 1 1v16a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1zm2 4v2h6V7zm0 4v2h6v-2zm0 4v2h4v-2z"/></svg>
+      <span>Custos</span>
+    </button>
+    <button class="tab" type="button" data-tab="produtos">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h14v4H5zm0 6h14v10H5zm3 2v2h8v-2z"/></svg>
+      <span>Produtos</span>
+    </button>
+  </nav>
 
   <script src="src/calc.js"></script>
   <script src="src/app.js"></script>

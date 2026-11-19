@@ -76,9 +76,9 @@
     $('ads-rs').textContent = brl(r.ads);
     $('ads-pct').textContent = (r.valor > 0 ? pctFmt(r.ads / r.valor) : '0%') + ' do valor cobrado';
 
-    const pill = $('status');
-    pill.textContent = st.txt;
-    pill.className = 'pill' + (st.cls ? ' ' + st.cls : '');
+    const chip = $('status');
+    chip.textContent = st.txt;
+    chip.className = 'chip' + (st.cls ? ' ' + st.cls : '');
 
     const fill = $('meter-fill');
     fill.style.width = Math.max(0, Math.min(r.margemDepoisPct / ESCALA_MAX, 1)) * 100 + '%';
@@ -151,6 +151,24 @@
     });
   }
 
+  // Navegação entre telas (barra inferior)
+  function irPara(nome) {
+    document.querySelectorAll('.screen').forEach((s) => {
+      s.classList.toggle('is-active', s.dataset.screen === nome);
+    });
+    document.querySelectorAll('.tab').forEach((t) => {
+      const ativo = t.dataset.tab === nome;
+      t.classList.toggle('is-active', ativo);
+      if (ativo) t.setAttribute('aria-current', 'page');
+      else t.removeAttribute('aria-current');
+    });
+    window.scrollTo(0, 0);
+  }
+
+  document.querySelectorAll('.tab').forEach((t) => {
+    t.addEventListener('click', () => irPara(t.dataset.tab));
+  });
+
   $('btn-salvar').addEventListener('click', () => {
     const nome = $('nome-produto').value.trim() || 'Produto sem nome';
     const lista = lerSalvos();
@@ -158,6 +176,7 @@
     gravarSalvos(lista.slice(0, 50));
     $('nome-produto').value = '';
     renderSalvos();
+    irPara('produtos');
   });
 
   $('lista-salvos').addEventListener('click', (ev) => {
@@ -169,7 +188,7 @@
       preencherForm(item.dados);
       $('nome-produto').value = item.nome;
       render();
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      irPara('inicio');
     }
     if (btn.dataset.acao === 'excluir') {
       lista.splice(Number(btn.dataset.i), 1);
