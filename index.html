@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <meta name="theme-color" content="#f2f2f7" media="(prefers-color-scheme: light)" />
-  <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)" />
+  <meta name="theme-color" content="#f4f1ec" media="(prefers-color-scheme: light)" />
+  <meta name="theme-color" content="#08080c" media="(prefers-color-scheme: dark)" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <title>Precificação ML</title>
   <link rel="stylesheet" href="styles.css" />
@@ -12,7 +12,7 @@
 <body>
   <div class="app">
 
-    <!-- PRECIFICAR -->
+    <!-- ============ PRECIFICAR ============ -->
     <section class="screen is-active" data-screen="precificar" aria-label="Precificar">
       <header class="head">
         <div>
@@ -23,88 +23,104 @@
       </header>
 
       <div id="sem-produtos" class="empty card" hidden>
+        <span class="empty-icon" aria-hidden="true">+</span>
         <h2>Cadastre seus produtos</h2>
         <p>A precificação usa os custos do cadastro. Adicione um produto ou importe sua planilha.</p>
         <button class="btn-primary" type="button" data-ir="produtos">Ir para produtos</button>
       </div>
 
       <div id="painel">
-        <label class="select-card card">
-          <span class="eyebrow">Produto do cadastro</span>
-          <select id="sel-produto" aria-label="Produto"></select>
-          <div class="chips" id="prod-resumo"></div>
-        </label>
-
-        <div class="segmented" role="tablist" aria-label="Como precificar">
-          <button type="button" role="tab" data-modo="margem" class="is-on">Por margem</button>
-          <button type="button" role="tab" data-modo="preco">Por preço</button>
+        <!-- Seção 1: produto -->
+        <div class="section">
+          <div class="section-head"><span class="num">1</span><h2>Produto</h2></div>
+          <label class="card select-card">
+            <span class="eyebrow">Escolha no cadastro</span>
+            <select id="sel-produto" aria-label="Produto"></select>
+            <div class="chips" id="prod-resumo"></div>
+          </label>
         </div>
 
-        <div class="card input-card">
-          <div id="campo-margem">
-            <label class="big-field">
-              <span>Margem de contribuição desejada</span>
-              <div class="big-input"><input id="p-margem" type="number" inputmode="decimal" step="0.1" min="0" value="25" /><em>%</em></div>
-            </label>
+        <!-- Seção 2: estratégia -->
+        <div class="section">
+          <div class="section-head"><span class="num">2</span><h2>Como precificar</h2></div>
+          <div class="segmented" role="tablist" aria-label="Como precificar">
+            <button type="button" role="tab" data-modo="margem" class="is-on">Por margem</button>
+            <button type="button" role="tab" data-modo="preco">Por preço</button>
+          </div>
+          <div class="card input-card">
+            <div id="campo-margem">
+              <label class="big-field">
+                <span>Margem de contribuição desejada</span>
+                <div class="big-input"><input id="p-margem" type="number" inputmode="decimal" step="0.1" min="0" value="25" /><em>%</em></div>
+              </label>
+            </div>
+            <div id="campo-preco" hidden>
+              <label class="big-field">
+                <span>Preço de venda que você quer praticar</span>
+                <div class="big-input"><em>R$</em><input id="p-preco" type="number" inputmode="decimal" step="0.01" min="0" placeholder="0,00" /></div>
+              </label>
+            </div>
             <label class="switch-row">
               <span>Considerar gasto com ADS</span>
               <input id="p-ads" type="checkbox" checked />
               <i aria-hidden="true"></i>
             </label>
-          </div>
-          <div id="campo-preco" hidden>
-            <label class="big-field">
-              <span>Preço de venda que você quer praticar</span>
-              <div class="big-input"><em>R$</em><input id="p-preco" type="number" inputmode="decimal" step="0.01" min="0" placeholder="0,00" /></div>
-            </label>
-          </div>
-          <div class="pair">
-            <label class="mini-field"><span>Cupom %</span><div class="mini-input"><input id="p-cupomPct" type="number" inputmode="decimal" step="0.01" min="0" placeholder="0" /><em>%</em></div></label>
-            <label class="mini-field"><span>Cupom R$</span><div class="mini-input"><em>R$</em><input id="p-cupomValor" type="number" inputmode="decimal" step="0.01" min="0" placeholder="0,00" /></div></label>
+            <div class="pair">
+              <label class="mini-field"><span>Cupom em %</span><div class="mini-input"><input id="p-cupomPct" type="number" inputmode="decimal" step="0.01" min="0" placeholder="0" /><em>%</em></div></label>
+              <label class="mini-field"><span>Cupom em R$</span><div class="mini-input"><em>R$</em><input id="p-cupomValor" type="number" inputmode="decimal" step="0.01" min="0" placeholder="0,00" /></div></label>
+            </div>
           </div>
         </div>
 
-        <div class="hero card">
-          <div class="hero-top">
-            <span class="hero-label" id="hero-label">Margem depois de ADS</span>
-            <span class="chip" id="status">-</span>
+        <!-- Seção 3: resultado -->
+        <div class="section">
+          <div class="section-head"><span class="num">3</span><h2>Resultado</h2></div>
+          <div class="hero">
+            <div class="hero-top">
+              <span class="hero-label" id="hero-label">Margem depois de ADS</span>
+              <span class="chip" id="status">-</span>
+            </div>
+            <div class="hero-value">
+              <strong id="margem-pct">0%</strong>
+              <span id="margem-rs">R$ 0,00</span>
+            </div>
+            <div class="meter"><div class="meter-fill" id="meter-fill"></div><span class="meter-goal" id="meter-goal"></span></div>
+            <div class="meter-scale"><span>0%</span><span>40%</span></div>
+            <p class="alert" id="alerta"></p>
           </div>
-          <div class="hero-value">
-            <strong id="margem-pct">0%</strong>
-            <span id="margem-rs">R$ 0,00</span>
+
+          <div class="price-card card">
+            <div class="price-main">
+              <span class="eyebrow" id="preco-titulo">Preço para essa margem</span>
+              <strong class="price" id="preco-final">-</strong>
+              <small class="muted" id="preco-info"></small>
+            </div>
+            <button class="btn-primary small" type="button" id="btn-usar">Usar no produto</button>
           </div>
-          <div class="meter"><div class="meter-fill" id="meter-fill"></div><span class="meter-goal" id="meter-goal"></span></div>
-          <p class="alert" id="alerta"></p>
+
+          <div class="bento">
+            <div class="tile">
+              <span class="eyebrow">Antes de ADS</span>
+              <strong id="antes-pct">0%</strong>
+              <span class="muted" id="antes-rs">R$ 0,00</span>
+            </div>
+            <div class="tile">
+              <span class="eyebrow">Gasto com ADS</span>
+              <strong id="ads-rs">R$ 0,00</strong>
+              <span class="muted" id="ads-pct">0% do valor cobrado</span>
+            </div>
+          </div>
         </div>
 
-        <div class="price-card card">
-          <div>
-            <span class="eyebrow" id="preco-titulo">Preço para essa margem</span>
-            <strong class="price" id="preco-final">-</strong>
-            <small class="muted" id="preco-info"></small>
-          </div>
-          <button class="btn-primary small" type="button" id="btn-usar">Usar no produto</button>
+        <!-- Seção 4: detalhamento -->
+        <div class="section">
+          <div class="section-head"><span class="num">4</span><h2>Para onde vai cada real</h2></div>
+          <ul class="card list waterfall" id="cascata"></ul>
         </div>
-
-        <div class="bento">
-          <div class="tile">
-            <span class="eyebrow">Antes de ADS</span>
-            <strong id="antes-pct">0%</strong>
-            <span class="muted" id="antes-rs">R$ 0,00</span>
-          </div>
-          <div class="tile">
-            <span class="eyebrow">Gasto com ADS</span>
-            <strong id="ads-rs">R$ 0,00</strong>
-            <span class="muted" id="ads-pct">0% do valor cobrado</span>
-          </div>
-        </div>
-
-        <h2 class="section-title">Para onde vai cada real</h2>
-        <ul class="group waterfall" id="cascata"></ul>
       </div>
     </section>
 
-    <!-- PRODUTOS -->
+    <!-- ============ PRODUTOS ============ -->
     <section class="screen" data-screen="produtos" aria-label="Produtos">
       <header class="head">
         <div>
@@ -114,8 +130,15 @@
         <button class="pill-btn" type="button" id="btn-novo">+ Novo</button>
       </header>
 
+      <div class="stats">
+        <div class="stat"><span>Cadastrados</span><strong id="st-total">0</strong></div>
+        <div class="stat"><span>Com preço</span><strong id="st-com-preco">0</strong></div>
+        <div class="stat warn"><span>Abaixo da meta</span><strong id="st-abaixo">0</strong></div>
+      </div>
+
       <div class="search">
-        <input id="busca" type="search" placeholder="Buscar por nome ou SKU" />
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10.5 3a7.5 7.5 0 0 1 5.96 12.06l4.24 4.24-1.41 1.41-4.24-4.24A7.5 7.5 0 1 1 10.5 3zm0 2a5.5 5.5 0 1 0 0 11 5.5 5.5 0 0 0 0-11z"/></svg>
+        <input id="busca" type="search" placeholder="Buscar por nome, SKU ou categoria" />
       </div>
 
       <div class="toolbar">
@@ -123,11 +146,11 @@
         <button class="chip-btn" type="button" id="btn-exportar">Backup JSON</button>
       </div>
 
-      <ul class="group produtos" id="lista-produtos"></ul>
-      <p class="footnote">Importe CSV separado por ponto e vírgula ou vírgula, com colunas: nome, sku, categoria, custo, embalagem, outros, frete, comissao.</p>
+      <div id="lista-produtos"></div>
+      <p class="footnote">Planilha CSV com colunas: nome, sku, categoria, custo, embalagem, outros, frete, comissao.</p>
     </section>
 
-    <!-- AJUSTES -->
+    <!-- ============ AJUSTES ============ -->
     <section class="screen" data-screen="ajustes" aria-label="Ajustes">
       <header class="head">
         <div>
@@ -136,25 +159,31 @@
         </div>
       </header>
 
-      <h2 class="section-title">Taxas padrão</h2>
-      <div class="group">
-        <label class="row field"><span>Comissão padrão</span><div class="input-wrap"><input data-aj="comissaoPct" type="number" inputmode="decimal" step="0.01" placeholder="Confira" /><em>%</em></div></label>
-        <label class="row field"><span>Taxa fixa por venda</span><div class="input-wrap"><em>R$</em><input data-aj="taxaFixa" type="number" inputmode="decimal" step="0.01" placeholder="0,00" /></div></label>
-        <label class="row field"><span>Imposto efetivo</span><div class="input-wrap"><input data-aj="impostoPct" type="number" inputmode="decimal" step="0.01" placeholder="0" /><em>%</em></div></label>
-        <label class="row field"><span>Programa de afiliados</span><div class="input-wrap"><input data-aj="afiliadoPct" type="number" inputmode="decimal" step="0.01" placeholder="0" /><em>%</em></div></label>
+      <div class="section">
+        <div class="section-head"><span class="num">1</span><h2>Taxas padrão</h2></div>
+        <div class="group">
+          <label class="row field"><span>Comissão padrão</span><div class="input-wrap"><input data-aj="comissaoPct" type="number" inputmode="decimal" step="0.01" placeholder="Confira" /><em>%</em></div></label>
+          <label class="row field"><span>Taxa fixa por venda</span><div class="input-wrap"><em>R$</em><input data-aj="taxaFixa" type="number" inputmode="decimal" step="0.01" placeholder="0,00" /></div></label>
+          <label class="row field"><span>Imposto efetivo</span><div class="input-wrap"><input data-aj="impostoPct" type="number" inputmode="decimal" step="0.01" placeholder="0" /><em>%</em></div></label>
+          <label class="row field"><span>Programa de afiliados</span><div class="input-wrap"><input data-aj="afiliadoPct" type="number" inputmode="decimal" step="0.01" placeholder="0" /><em>%</em></div></label>
+        </div>
       </div>
 
-      <h2 class="section-title">ADS e metas</h2>
-      <div class="group">
-        <label class="row field"><span>ACOS médio de ADS</span><div class="input-wrap"><input data-aj="acosPct" type="number" inputmode="decimal" step="0.01" placeholder="0" /><em>%</em></div></label>
-        <label class="row field"><span>Margem mínima aceitável</span><div class="input-wrap"><input data-aj="margemMinPct" type="number" inputmode="decimal" step="0.01" placeholder="20" /><em>%</em></div></label>
+      <div class="section">
+        <div class="section-head"><span class="num">2</span><h2>ADS e metas</h2></div>
+        <div class="group">
+          <label class="row field"><span>ACOS médio de ADS</span><div class="input-wrap"><input data-aj="acosPct" type="number" inputmode="decimal" step="0.01" placeholder="0" /><em>%</em></div></label>
+          <label class="row field"><span>Margem mínima aceitável</span><div class="input-wrap"><input data-aj="margemMinPct" type="number" inputmode="decimal" step="0.01" placeholder="20" /><em>%</em></div></label>
+        </div>
       </div>
 
-      <h2 class="section-title">Dados</h2>
-      <div class="group">
-        <button class="row action danger-text" type="button" id="btn-apagar">Apagar todos os dados</button>
+      <div class="section">
+        <div class="section-head"><span class="num">3</span><h2>Dados</h2></div>
+        <div class="group">
+          <button class="row action danger-text" type="button" id="btn-apagar">Apagar todos os dados</button>
+        </div>
       </div>
-      <p class="footnote">Comissão e taxas mudam. Confira na tabela oficial do Mercado Livre. Os dados ficam salvos neste navegador, então faça backup em JSON de tempos em tempos.</p>
+      <p class="footnote">Comissão e taxas mudam. Confira na tabela oficial do Mercado Livre. Os dados ficam neste navegador, então faça backup em JSON de tempos em tempos.</p>
     </section>
   </div>
 
@@ -168,12 +197,13 @@
       <button type="submit" class="link strong" id="sheet-salvar">Salvar</button>
     </div>
     <input type="hidden" name="id" />
+    <div class="section-head"><span class="num">1</span><h2>Identificação</h2></div>
     <div class="group">
       <label class="row field"><span>Nome</span><input class="text-input" name="nome" type="text" maxlength="90" placeholder="Ex.: Vaso cerâmica 20cm" required /></label>
       <label class="row field"><span>SKU</span><input class="text-input" name="sku" type="text" maxlength="40" placeholder="Opcional" /></label>
-      <label class="row field"><span>Categoria</span><input class="text-input" name="categoria" type="text" maxlength="60" placeholder="Opcional" /></label>
+      <label class="row field"><span>Categoria</span><input class="text-input" name="categoria" type="text" maxlength="60" placeholder="Ex.: Vasos" /></label>
     </div>
-    <h2 class="section-title">Custos por unidade</h2>
+    <div class="section-head"><span class="num">2</span><h2>Custos por unidade</h2></div>
     <div class="group">
       <label class="row field"><span>Custo do produto</span><div class="input-wrap"><em>R$</em><input name="custo" type="number" inputmode="decimal" step="0.01" min="0" placeholder="0,00" /></div></label>
       <label class="row field"><span>Embalagem</span><div class="input-wrap"><em>R$</em><input name="embalagem" type="number" inputmode="decimal" step="0.01" min="0" placeholder="0,00" /></div></label>

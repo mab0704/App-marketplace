@@ -219,32 +219,65 @@
     return { r, pct: r.margemDepoisPct, valor: r.margemDepois };
   }
 
+  function iniciais(nome) {
+    const partes = String(nome).trim().split(/\s+/).filter(Boolean);
+    const txt = (partes[0] || '?').charAt(0) + (partes.length > 1 ? partes[partes.length - 1].charAt(0) : '');
+    return txt.toUpperCase();
+  }
+
   function renderProdutos() {
     const q = $('busca').value.trim().toLowerCase();
-    const lista = dados.produtos
+    const todos = dados.produtos;
+    const lista = todos
       .filter((p) => !q || `${p.nome} ${p.sku} ${p.categoria}`.toLowerCase().includes(q))
       .sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'));
 
-    $('qtd-produtos').textContent = `${dados.produtos.length} ${dados.produtos.length === 1 ? 'produto' : 'produtos'}`;
+    // Indicadores
+    const comPreco = todos.filter((p) => p.precoAtual != null && p.precoAtual !== '');
+    const abaixo = comPreco.filter((p) => {
+      const m = margemDoPrecoAtual(p);
+      return m && m.pct < m.r.margemMin;
+    });
+    $('st-total').textContent = String(todos.length);
+    $('st-com-preco').textContent = String(comPreco.length);
+    $('st-abaixo').textContent = String(abaixo.length);
+    $('qtd-produtos').textContent = `${todos.length} ${todos.length === 1 ? 'produto' : 'produtos'}`;
 
+    const alvo = $('lista-produtos');
     if (!lista.length) {
-      $('lista-produtos').innerHTML = `<li class="empty-line">${dados.produtos.length ? 'Nenhum produto encontrado.' : 'Seu cadastro está vazio. Toque em + Novo ou importe uma planilha.'}</li>`;
+      alvo.innerHTML = `<div class="card empty-line">${todos.length ? 'Nenhum produto encontrado.' : 'Seu cadastro está vazio. Toque em + Novo ou importe uma planilha.'}</div>`;
       return;
     }
 
-    $('lista-produtos').innerHTML = lista
-      .map((p) => {
-        const m = margemDoPrecoAtual(p);
-        const detalhe = [p.sku, p.categoria].filter(Boolean).join(' · ') || 'Sem SKU';
-        let lado = '<span class="muted">Sem preço</span>';
-        if (m) {
-          const st = statusDe(m.r, m.pct, m.valor);
-          lado = `<strong>${brl(p.precoAtual)}</strong><span class="chip ${st.cls}">${pctFmt(m.pct)} depois de ADS</span>`;
-        }
-        return `<li data-id="${esc(p.id)}">
-          <div class="info"><strong>${esc(p.nome)}</strong><span>${esc(detalhe)} · custo ${brl(p.custo)}</span></div>
-          <div class="side">${lado}</div>
-        </li>`;
+    // Agrupa por categoria
+    const grupos = new Map();
+    for (const p of lista) {
+      const cat = p.categoria || 'Sem categoria';
+      if (!grupos.has(cat)) grupos.set(cat, []);
+      grupos.get(cat).push(p);
+    }
+    const cats = [...grupos.keys()].sort((a, b) => a.localeCompare(b, 'pt-BR'));
+
+    alvo.innerHTML = cats
+      .map((cat) => {
+        const itens = grupos.get(cat)
+          .map((p) => {
+            const m = margemDoPrecoAtual(p);
+            const detalhe = [p.sku, `custo ${brl(p.custo)}`].filter(Boolean).join(' · ');
+            let lado = '<span class="muted">Sem preço</span>';
+            if (m) {
+              const st = statusDe(m.r, m.pct, m.valor);
+              lado = `<strong>${brl(p.precoAtual)}</strong><span class="chip ${st.cls}">${pctFmt(m.pct)} depois de ADS</span>`;
+            }
+            return `<li data-id="${esc(p.id)}">
+              <span class="initials" aria-hidden="true">${esc(iniciais(p.nome))}</span>
+              <div class="info"><strong>${esc(p.nome)}</strong><span>${esc(detalhe)}</span></div>
+              <div class="side">${lado}</div>
+            </li>`;
+          })
+          .join('');
+        return `<div class="cat-title"><h2>${esc(cat)}</h2><span>${grupos.get(cat).length}</span></div>
+          <ul class="group produtos">${itens}</ul>`;
       })
       .join('');
   }
