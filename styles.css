@@ -273,3 +273,24 @@ input[type="number"] { -moz-appearance: textfield; appearance: textfield; }
 }
 @media (min-width: 720px) { .screen { padding-top: 36px; } }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition: none !important; animation: none !important; } }
+
+/* ============ Sem quebras de linha nos títulos e rótulos ============ */
+.cfg-head { flex-direction: column; align-items: flex-start; gap: 10px; padding-top: 2px; }
+.cfg-head > div { width: 100%; }
+.cfg-head h3, .cfg-head p, .fld > span, .switch-row span, .stat span, .section-head h2, .tab span, .cat-title h2, .eyebrow, .costs span, .hero-label, .price-card small, .tile .eyebrow { white-space: nowrap; }
+.cfg-head h3 { font-size: 14px; }
+.cfg-head p { font-size: 12px; overflow: visible; text-overflow: clip; }
+.cfg { padding: 14px; gap: 12px; }
+.ico { width: 38px; height: 38px; border-radius: 13px; }
+.switch-row { font-size: 13px; gap: 8px; }
+.fld > span { font-size: 12px; }
+.stat span { font-size: 11px; }
+.costs span { font-size: 10px; }
+.costs span b { font-size: 12px; white-space: nowrap; }
+.tab span { font-size: 10.5px; }
+.price-card { flex-wrap: wrap; }
+.wf-row span:first-child, .wf-row span:last-child { white-space: nowrap; }
+.wf-row span:first-child { overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.toast { white-space: nowrap; }
+
+.chip, .btn-primary, .btn-primary.small, .pill-btn, .chip-btn, .segmented button, .link-btn { white-space: nowrap; }
