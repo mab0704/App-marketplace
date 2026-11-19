@@ -108,5 +108,10 @@
     return Math.round(c * 100) / 100;
   }
 
-  return { calcular, precoMinimo, precoComTerminacao, normalizar };
+  /** Preço de venda que entrega exatamente a margem desejada (em %). */
+  function precoParaMargem(entrada, margemPct, incluiAds = true) {
+    return precoMinimo(entrada, { margemPct, incluiAds });
+  }
+
+  return { calcular, precoMinimo, precoParaMargem, precoComTerminacao, normalizar };
 });

@@ -76,3 +76,12 @@ test('terminação R$ x,90 sempre fica igual ou acima do preço', () => {
   assert.equal(precoComTerminacao(49.9), 49.9);
   assert.equal(precoComTerminacao(0), null);
 });
+
+test('preço para margem desejada entrega exatamente essa margem', () => {
+  const { precoParaMargem } = require('../src/calc.js');
+  const p = precoParaMargem(base, 25, true);
+  const r = calcular({ ...base, preco: p });
+  assert.ok(Math.abs(r.margemDepoisPct - 0.25) < 1e-9);
+  const pSem = precoParaMargem(base, 25, false);
+  assert.ok(Math.abs(calcular({ ...base, preco: pSem }).margemAntesPct - 0.25) < 1e-9);
+});
