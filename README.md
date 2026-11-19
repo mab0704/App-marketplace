@@ -4,13 +4,16 @@ Calcula a margem de contribuição antes e depois de ADS, com custos de comissã
 
 ## Como usar
 
-Abra `index.html` no navegador, ou publique a pasta em qualquer hospedagem de site estático. Não precisa instalar nada para usar.
+Abra `index.html` no navegador, ou publique a pasta em qualquer hospedagem estática. Não precisa instalar nada.
 
-1. Preencha o preço anunciado e os custos do produto.
-2. Preencha a comissão da sua categoria e a taxa fixa por venda, conferindo na tabela oficial do Mercado Livre, porque esses valores mudam.
-3. Informe o imposto efetivo, o cupom que você paga e o percentual do programa de afiliados.
-4. Informe o ACOS médio dos seus ADS para ver a margem depois de ADS.
-5. Salve o produto para comparar depois.
+1. **Ajustes:** informe comissão padrão, taxa fixa, imposto, afiliados e ACOS médio. Confira a comissão na tabela oficial do Mercado Livre.
+2. **Produtos:** cadastre cada produto (custo, embalagem, frete e outros custos) ou importe sua planilha em CSV. O CSV pode usar ponto e vírgula ou vírgula, com as colunas: nome, sku, categoria, custo, embalagem, outros, frete, comissao.
+3. **Precificar:** escolha o produto do cadastro e um dos modos:
+   - **Por margem:** informe a margem de contribuição desejada. O app calcula o preço mínimo e sugere o fechamento em ,90.
+   - **Por preço:** informe o preço que quer praticar. O app mostra a margem e diz se atinge a meta.
+4. Toque em **Usar no produto** para guardar o preço no cadastro.
+
+Os dados ficam salvos no navegador. Faça o backup em JSON pela tela Produtos.
 
 ## Como o cálculo funciona
 
@@ -30,8 +33,8 @@ Os testes conferem a cascata de custos, cupons, afiliados, o preço mínimo e o 
 
 ## Arquivos
 
-- `index.html`: telas e formulário
+- `index.html`: telas (Precificar, Produtos, Ajustes)
 - `styles.css`: visual, com modo claro e escuro
 - `src/calc.js`: regras de cálculo, sem dependências
-- `src/app.js`: ligação entre formulário, resultados e produtos salvos
+- `src/app.js`: cadastro, importação, precificação e ajustes
 - `tests/calc.test.mjs`: testes do cálculo
