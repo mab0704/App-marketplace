@@ -33,7 +33,7 @@ Os testes conferem a cascata de custos, cupons, afiliados, o preço mínimo e o 
 
 ## Arquivos
 
-- `index.html`: telas (Precificar, Produtos, Ajustes)
+- `index.html`: telas (Calcular, Histórico, Produtos, Ajustes)
 - `styles.css`: visual, com modo claro e escuro
 - `src/calc.js`: regras de cálculo, sem dependências
 - `src/app.js`: cadastro, importação, precificação e ajustes

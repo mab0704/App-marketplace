@@ -18,10 +18,10 @@
     try {
       const d = JSON.parse(localStorage.getItem(STORE_KEY) || 'null');
       if (d && Array.isArray(d.produtos)) {
-        return { produtos: d.produtos, ajustes: { ...AJUSTES_PADRAO, ...(d.ajustes || {}) } };
+        return { produtos: d.produtos, ajustes: { ...AJUSTES_PADRAO, ...(d.ajustes || {}) }, historico: Array.isArray(d.historico) ? d.historico : [] };
       }
     } catch (_) { /* sem armazenamento ou dados corrompidos */ }
-    return { produtos: [], ajustes: { ...AJUSTES_PADRAO } };
+    return { produtos: [], ajustes: { ...AJUSTES_PADRAO }, historico: [] };
   }
 
   let dados = carregar();
@@ -106,9 +106,19 @@
 
     // Select de produtos
     const sel = $('sel-produto');
-    const ordenados = [...dados.produtos].sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'));
-    if (!ui.sel || !dados.produtos.some((p) => p.id === ui.sel)) ui.sel = ordenados[0].id;
-    sel.innerHTML = ordenados.map((p) => `<option value="${esc(p.id)}" ${p.id === ui.sel ? 'selected' : ''}>${esc(p.nome)}</option>`).join('');
+    const qCalc = ($('busca-calc').value || '').trim().toLowerCase();
+    const ordenados = [...dados.produtos]
+      .filter((p) => !qCalc || `${p.nome} ${p.sku}`.toLowerCase().includes(qCalc))
+      .sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'));
+    if (ordenados.length && !ordenados.some((p) => p.id === ui.sel)) ui.sel = ordenados[0].id;
+    sel.innerHTML = ordenados.length
+      ? ordenados.map((p) => `<option value="${esc(p.id)}" ${p.id === ui.sel ? 'selected' : ''}>${esc(p.nome)}</option>`).join('')
+      : '<option value="">Nenhum produto encontrado</option>';
+    if (!ordenados.length) {
+      $('prod-resumo').innerHTML = '';
+      $('btn-usar').disabled = true;
+      return;
+    }
 
     const prod = produtoSel();
     const custos = [
@@ -117,7 +127,7 @@
       ['Frete', prod.frete],
       ['Outros', prod.outros],
     ];
-    $('prod-resumo').innerHTML = custos.map(([l, v]) => `<span>${l} ${brl(v)}</span>`).join('');
+    $('prod-resumo').innerHTML = custos.map(([l, v]) => `<span>${l}<b>${brl(v)}</b></span>`).join('');
 
     // Modo
     document.querySelectorAll('.segmented button').forEach((b) => b.classList.toggle('is-on', b.dataset.modo === ui.modo));
@@ -477,14 +487,24 @@
       renderPrecificar();
     })
   );
+  $('busca-calc').addEventListener('input', renderPrecificar);
   ['p-margem', 'p-preco', 'p-cupomPct', 'p-cupomValor', 'p-ads'].forEach((id) => $(id).addEventListener('input', renderPrecificar));
   $('btn-usar').addEventListener('click', () => {
     const res = calcularPrecificacao();
     if (!res || res.erro) return;
     res.prod.precoAtual = res.preco;
+    dados.historico.unshift({
+      id: uid(),
+      nome: res.prod.nome,
+      preco: res.preco,
+      margemPct: res.f.incluiAds ? res.r.margemDepoisPct : res.r.margemAntesPct,
+      modo: ui.modo,
+      criadoEm: Date.now(),
+    });
+    dados.historico = dados.historico.slice(0, 200);
     salvar();
     toast(`Preço ${brl(res.preco)} salvo em ${res.prod.nome}`);
-    renderProdutos();
+    renderTudo();
   });
 
   /* ---------- Ajustes ---------- */
@@ -500,7 +520,7 @@
 
   $('btn-apagar').addEventListener('click', () => {
     if (!confirm('Apagar todos os produtos e ajustes deste navegador? Faça um backup antes.')) return;
-    dados = { produtos: [], ajustes: { ...AJUSTES_PADRAO } };
+    dados = { produtos: [], ajustes: { ...AJUSTES_PADRAO }, historico: [] };
     ui.sel = null;
     salvar();
     document.querySelectorAll('[data-aj]').forEach((el) => (el.value = dados.ajustes[el.dataset.aj] ?? ''));
@@ -532,9 +552,52 @@
     toastTimer = setTimeout(() => t.classList.remove('show'), 2600);
   }
 
+  function renderHistorico() {
+    const lista = dados.historico;
+    $('qtd-historico').textContent = `${lista.length} ${lista.length === 1 ? 'registro' : 'registros'}`;
+    const alvo = $('lista-historico');
+    if (!lista.length) {
+      alvo.innerHTML = '<div class="card empty-line">Nenhum preço usado ainda. Ao tocar em "Usar no produto", o registro aparece aqui.</div>';
+      return;
+    }
+    const hoje = new Date().toDateString();
+    const ontem = new Date(Date.now() - 864e5).toDateString();
+    const titulo = (ts) => {
+      const d = new Date(ts);
+      if (d.toDateString() === hoje) return 'Hoje';
+      if (d.toDateString() === ontem) return 'Ontem';
+      return d.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long' });
+    };
+    const grupos = new Map();
+    for (const h of lista) {
+      const t = titulo(h.criadoEm);
+      if (!grupos.has(t)) grupos.set(t, []);
+      grupos.get(t).push(h);
+    }
+    alvo.innerHTML = [...grupos.entries()]
+      .map(([t, itens]) => `<div class="day-title">${esc(t)}</div><ul class="group hist">${itens
+        .map((h) => {
+          const hora = new Date(h.criadoEm).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+          const st = h.margemPct < (Number(dados.ajustes.margemMinPct) || 20) / 100 ? 'bad' : 'ok';
+          return `<li><div class="info"><strong>${esc(h.nome)}</strong><span>${hora} · ${h.modo === 'margem' ? 'por margem' : 'por preço'}</span></div>
+            <div class="side"><strong>${brl(h.preco)}</strong><span class="chip ${st}">${pctFmt(h.margemPct)}</span></div></li>`;
+        })
+        .join('')}</ul>`)
+      .join('');
+  }
+
+  $('btn-limpar-historico').addEventListener('click', () => {
+    if (!dados.historico.length || !confirm('Apagar todo o histórico de preços?')) return;
+    dados.historico = [];
+    salvar();
+    renderHistorico();
+    toast('Histórico apagado');
+  });
+
   function renderTudo() {
     renderPrecificar();
     renderProdutos();
+    renderHistorico();
   }
 
   renderTudo();
